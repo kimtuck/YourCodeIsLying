@@ -231,7 +231,8 @@ describe("requires a first argument that is a real number", function() {
 
 // Third Requirement: does not produce garbage output
 // Hint: separating first, last name
-
+// Hint: finite representation of mantissa
+// Hint: null object pattern
 
 describe("you must deal with range ", function() {
     function div(x: RealNumber, y: NonZeroNumber): number {
@@ -248,6 +249,9 @@ describe("you must deal with range ", function() {
 
     // Also note that numbers are not arbitrary precision.  What is 1 / 3 ???
 })
+
+// Fourth requirement: does not throw an exception
+// Always returns a result
 
 describe("Don't throw; return an object with success/failure indication", function() {
 
@@ -271,7 +275,7 @@ describe("Don't throw; return an object with success/failure indication", functi
         }
     }
 
-    it('Can produce a number larger than can be represented by "number"', function() {
+    it('returns an error state for a number larger than can be represented by "number"', function() {
         expect(div(new RealNumber(Number.MAX_VALUE),new NonZeroNumber(0.1)).Error).toBe('x is too big');
     })
     it ('Returns a Ok result for normal calculations', function() {
@@ -298,14 +302,14 @@ describe("Return a promise", function() {
         return p;
     }
 
-    it('Can produce a number larger than can be represented by "number"', function(done) {
+    it('rejects the promise when producing a number larger than can be represented by "number"', function(done) {
         var p = div(new RealNumber(Number.MAX_VALUE),new NonZeroNumber(0.1));
         p.then(function() { fail('should fail, but didnt'); done(); });
         p.catch(function() { console.log('passed'); done()})
     })
-    it('Returns a Ok result for normal calculations', function(done) {
+    it('resolves the promise for normal calculations', function(done) {
         var p = div(new RealNumber(10),new NonZeroNumber(2));
-        p.then(function(n) { expect(n).toBe(5); console.log('xpassed'); done(); });
+        p.then(function(n) { expect(n).toBe(5); console.log('passed'); done(); });
         p.catch(function() { fail('should not have failed, but did'); done()})
     })
 })
