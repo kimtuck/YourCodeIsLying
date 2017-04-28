@@ -77,7 +77,7 @@ describe("pure function", function () {
         expect(div(3, 4)).toBe(0.75);
     });
 });
-// Second requirement: Does not throw exceptions.
+// Second requirement: Requires arguments to meet domain requirements.
 // Avoid "primitive obsession"
 // Ensure that parameters meet problem domain requirements
 // Hint: person record with no email address

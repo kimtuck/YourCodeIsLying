@@ -115,8 +115,7 @@ describe("pure function", function() {
 
 
 
-// Second requirement: Does not throw exceptions.
-
+// Second requirement: Requires arguments to meet domain requirements.
 
 // Avoid "primitive obsession"
 // Ensure that parameters meet problem domain requirements
