@@ -1,5 +1,4 @@
 "use strict";
-// bare function example
 /// <reference path="../../../../typings/tsd.d.ts" />
 /// <reference path="../../../../typings/jasmine/jasmine.d.ts" />
 // This is the code we'll be working with
@@ -19,6 +18,7 @@ describe("function div; with global variables.", function () {
     });
 });
 // Hint: uses global variables
+// Hint: tests; beforeEach
 describe("object with method div; object properties.", function () {
     var Div = function () {
         this.x = 3;
@@ -30,6 +30,7 @@ describe("object with method div; object properties.", function () {
         expect(d.div()).toBe(0.75);
     });
 });
+// Hint: div is a constructor
 // Hint: uses class members
 // Hint: what is "this"?
 // Next approach: make a Typescript Class, class method
@@ -44,10 +45,10 @@ describe("TS: class method div, with instance variables.", function () {
     }());
     ;
     it('divides x by y', function () {
-        var instance = new Div();
-        instance.x = 3;
-        instance.y = 4;
-        expect(instance.div()).toBe(0.75);
+        var d = new Div();
+        d.x = 3;
+        d.y = 4;
+        expect(d.div()).toBe(0.75);
     });
 });
 // Hint: same problem as above, except for "this"
@@ -64,8 +65,8 @@ describe("class method with parameters", function () {
     }());
     ;
     it('divides x by y', function () {
-        var instance = new Div();
-        expect(instance.div(3, 4)).toBe(0.75);
+        var d = new Div();
+        expect(d.div(3, 4)).toBe(0.75);
     });
 });
 // Javascript (and typescript) lets functions be global.
@@ -254,4 +255,15 @@ describe("Return a promise", function () {
         p.catch(function () { fail('should not have failed, but did'); done(); });
     });
 });
+// Other things that are notoriously lying
+// Dates
+// -- When will a future event take place
+// -- How long until a future event?
+// -- Person who is born on Feb 29th -- how old is he?
+// -- use a library like moment.js
+// Async
+// -- assume async calls will finish synchronously
+// -- assume remote calls will succeed
+// -- assume order of completion of remote calls
+// -- mixing sync and async
 //# sourceMappingURL=test.js.map
