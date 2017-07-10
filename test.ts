@@ -1,35 +1,82 @@
 "use strict";
-/// <reference path="../../../../typings/tsd.d.ts" />
-/// <reference path="../../../../typings/jasmine/jasmine.d.ts" />
 
-// This is the code we'll be working with
+// Preliminaries
 
-//     z = x / y;
+// * Unit tests
+// * All tests in this file pass.
 
+describe('sample unit tests', function() {
+    var x;
+    var y;
+    beforeEach(function() {
+        x=3;
+        y=4;
+    })
 
-// First requirement:  Each time you call a function with the same parameters, it returns the same result.
+    it('adds two numbers', function() {
+        expect(x + y).toBe(7);
+    })
 
+    it('adds a different number', function() {
+        x = 12;
+        expect(x + y).toBe(16);
+    })
 
+    // Some unexpected behavior!!!
+    it('adding a string',function() {
+        x="3"
+        y=4
+        expect(x + y).toBe("34");
+    })
 
-// First approach: make a function
-describe("function div; with global variables.", function() {
+    it('adding NaN',function() {
+        x=Number.NaN
+        y=4
+        expect(isNaN(x + y)).toBe(true);
+    })
+
+    it('adding an object',function() {
+        x={ name: 'Bill'}
+        y=4
+        expect(x + y).toBe('[object Object]4');
+    })
+})
+
+// Requirement 1: returns the same value when called with identical arguments.
+//
+// Lie 1: has different return values, depending on values of x and y.
+describe("div with global variables.", function() {
     var x;
     var y;
     var div = function() {
         return x / y;
     };
 
-    it('divides x by y',function() {
+    beforeEach (function() {
         x=3;
         y=4;
+    })
+
+    // Hey, it works!!!
+    it('divides x by y',function() {
         expect(div()).toBe(0.75);
     })
+
+    // No, not really
+    it('divides x by y again',function() {
+        expect(div()).toBe(0.75);
+
+        y=10;
+        expect(div()).toBe(0.3);    // not the same anymore
+    })
+
 });
 // Hint: uses global variables
 // Hint: tests; beforeEach
 
 
-describe("object with method div; object properties.", function() {
+// Try encapsulation
+describe("div  as member function; accessing object properties", function() {
     var Div = function(){
         this.x = 3;
         this.y = 4;
@@ -41,7 +88,7 @@ describe("object with method div; object properties.", function() {
         expect(d.div()).toBe(0.75);
     })
 });
-// Hint: div is a constructor
+// Hint: Div is a constructor
 // Hint: uses class members
 // Hint: what is "this"?
 
@@ -51,16 +98,16 @@ describe("TS: class method div, with instance variables.", function() {
     class Div {
         public x: number;
         public y: number;
-        constructor() { }
-
-        public div(): number {
-            return this.x / this.y;
+        constructor() {
+            this.x = 3;
+            this.y = 4;
         }
+
+        public div(): number { return this.x / this.y; }
+
     };
     it('divides x by y',function() {
         let d = new Div();
-        d.x = 3;
-        d.y = 4;
         expect(d.div()).toBe(0.75);
     })
 })
@@ -68,29 +115,77 @@ describe("TS: class method div, with instance variables.", function() {
 
 
 
+// Requirement 1: returns the same value when called with identical arguments.
+// Solution: Pure function
+// -- Depends only on passed in parameters.
+// -- Does not modify passed in parameters
+// -- No side effects
+// -- Must return a value  (why?)
 
-
-
-
-// Pure function.  Depends only on passed-in parameters, and returns a value.
-// This method is a class method
-describe("class method with parameters", function() {
-    class Div {
-        public div(x: number, y: number): number {
-            return x / y;
-        }
-    };
+describe("div as a pure function", function() {
+    function div(x, y) {
+        return x / y;
+    }
     it('divides x by y',function() {
-        let d = new Div();
-        expect(d.div(3,4)).toBe(0.75);
+        expect(div(3,4)).toBe(0.75);
     })
 })
+// Question: Is your function pure?
 
 
 
 
-// Javascript (and typescript) lets functions be global.
-describe("pure function", function() {
+
+
+
+// Requirement 2: Enforces arguments to meet type requirements.
+
+// Lie 2a: div can take any arguments, of any type, you pass it.
+describe("div does not restrict parameters based on type", function() {
+    function div(x, y) {
+        return x / y;
+    }
+    it('divides x by y',function() {
+        expect(div(3,4)).toBe(0.75);
+    })
+})
+// Hint: what kind of arguments can I pass into div?
+// Hint -- how would you restrict types?
+
+describe("div with parameter type checking", function() {
+    function div(x, y) {
+        if (arguments.length != 2)
+            throw "pass two arguments"
+        if (x === null || y === null)
+            throw "arguments should not be null"
+        if (isNaN(x) || isNaN(y))
+            throw "arguments should be numbers"
+
+        return x / y;
+    }
+    it('divides x by y',function() {
+        expect(div(3,4)).toBe(0.75);
+    })
+    it('throws on incorrect number of arguments', function() {
+        expect(function() { div(2)}).toThrow();
+    })
+    it('throws on null', function() {
+        expect(function() { div(null, null)}).toThrow();
+    })
+    it('throws on bad arguments', function() {
+        expect(function() { div('a','b')} ).toThrow();
+    })
+})
+// Hint: separation of concerns.  How much code is concerned with type checks and how much is business logic?
+
+
+
+// Requirement 2: Enforces arguments to meet type requirements.
+
+// Solution:
+// -- Use typescript to do type checking.
+
+describe("div as a pure function", function() {
     function div(x: number, y: number): number {
         return x / y;
     }
@@ -98,22 +193,22 @@ describe("pure function", function() {
         expect(div(3,4)).toBe(0.75);
     })
 })
+// Done!!!  -- well, maybe not.
 
 
-
-
-
-
-// Second requirement: Requires arguments to meet domain requirements.
+// Requirement 2: Enforces arguments to meet problem domain requirements.
+// Lie 2b -- div allows you to pass any number.  But lots of things are not really allowed.  Div by zero.
+// Solution:
 
 // Avoid "primitive obsession"
 // Ensure that parameters meet problem domain requirements
-// Hint: person record with no email address
-// Hint: null object
 
+// Domain:
+// -- numerator and denominator are actual numbers
+// -- denominator is not zero
+// -- result can be represented as a javascript number
 
-// Domain: divide by zero
-describe("Divide by zero, primitive obsession", function() {
+describe("div when y is zero (primitive obsession)", function() {
     function div(x: number, y: number): number {
         return x / y;
     }
@@ -121,7 +216,8 @@ describe("Divide by zero, primitive obsession", function() {
         expect(div(3,0)).toBe( Number.POSITIVE_INFINITY);
     })
 })
-// Here I was surprised.  In C# you get an exception; in javascript you get Number.POSTIVE_INFINITY
+// Here I was surprised.  In C# you get an exception;
+// in javascript you get Number.POSTIVE_INFINITY
 // But same as NaN poisoning
 
 
@@ -138,6 +234,10 @@ class NonZeroNumber {
 }
 
 describe('Verify functionality of NonZeroNumber class', function() {
+    it('can construct a NonZeroNumber with acceptable value', function() {
+        expect((new NonZeroNumber(5)).num).toBe(5);
+    })
+
     it('cannot construct a NonZeroNumber with value 0', function() {
         expect(function() { new NonZeroNumber(0)}).toThrow();
     })
@@ -151,16 +251,16 @@ describe('Verify functionality of NonZeroNumber class', function() {
         expect(function() { new NonZeroNumber(NaN)}).toThrow();
     })
 
-    // Typescript typechecking
+    // Does not compile
     //it('cannot take a non-number argument', function() {
     //    expect((new NonZeroNumber('5')).num).toBe(5);
     //})
-    it('can construct a NonZeroNumber with acceptable value', function() {
-        expect((new NonZeroNumber(5)).num).toBe(5);
-    })
+    //it('cannot take a non-number argument', function() {
+    //    expect((new NonZeroNumber([5])).num).toBe(5);
+    //})
 })
 
-describe("passing a NonZeroNumber arguments", function() {
+describe("div with a NonZeroNumber argument", function() {
     function div(x: number, y: NonZeroNumber): number {
         return x / y.num;
     }
@@ -168,34 +268,21 @@ describe("passing a NonZeroNumber arguments", function() {
         expect(div(3,new NonZeroNumber(4))).toBe(0.75);
     })
 
-    // Typescript typechecking
-    //it('cannot take a non-NonZeroNumber argument', function() {
-    //    expect(div(3,4)).toBe(0.75);
-    //})
-
-    // Typescript typechecking
-    //it('cannot take a null second argument', function() {
+    // Now y can be null.  We will deal with null later.
+    //it('still allows null for second argument', function() {
     //    expect(div(3,null)).toBe(0.75);
     //})
+
+    // Cannot call div anymore with a simple number as denominator.  Does not compile.
+    // it('cannot take a non-NonZeroNumber argument', function() {
+    //    expect(div(3,4)).toBe(0.75);
+    // })
 })
-// Hint: Webstorm indicates an error, but compiles it and runs it.
 // Hint: Typscript does not have a built-in runtime null check
-// Hint: C# null check
+// Talking point: person record with no email address
 
 
-
-
-// Primitive obsession for first argument.
-describe("First argument should be a real number", function() {
-    function div(x: number, y: NonZeroNumber): number {
-        return x / y.num;
-    }
-
-    it('accepts NaN for first argument', function() {
-        expect(isNaN(div(Number.NaN,new NonZeroNumber(4)))).toBe(true);
-    })
-})
-
+// Fix Primitive obsession for first argument.
 class RealNumber {
     private _num: number;
     get num () : number { return this._num; }
@@ -217,30 +304,59 @@ describe("requires a first argument that is a real number", function() {
 })
 
 
-// Third Requirement: does not produce garbage output
-// Hint: separating first, last name
-// Hint: finite representation of mantissa
-// Hint: null object pattern
+// Requirement 3: Always returns a useful value.
 
-describe("you must deal with range ", function() {
+// Lie 3: all combinations of input parameters produce a useful output
+// What about your code?
+
+// div's lies:
+// -- div returns the EXACT result of dividing x by y
+// -- finite representation of mantissa
+// -- range of numeric representation
+// These are hard to fix.
+
+describe("div range examples", function() {
     function div(x: RealNumber, y: NonZeroNumber): number {
         return x.num / y.num;
     }
+    it('Does not exactly represent 1/3', function() {
+        expect(div(new RealNumber(1), new NonZeroNumber(3))).toBe(0.3333333333333333);
+    })
+    it('Does not exactly represent large values', function() {
+        expect(div(new RealNumber(10000000000000001), new NonZeroNumber(1000))).toBe(10000000000000);
+    })
 
     it('Can produce a number larger than can be represented by "number"', function() {
         expect(div(new RealNumber(Number.MAX_VALUE),new NonZeroNumber(0.1))).toBe(Number.POSITIVE_INFINITY);
     })
 
+    // (x/a)/a =
     it('Numbers smaller than minimum are set to 0', function() {
-        expect(div(new RealNumber(Number.MIN_VALUE*100),new NonZeroNumber(Number.MAX_VALUE)) * Number.MIN_VALUE).toBe(0);
+        expect(0.0000000000000001).not.toBe(0)
+        expect(div(new RealNumber(0.0000000000000001),new NonZeroNumber(Number.MAX_VALUE))).toBe(0);
     })
-
-    // Also note that numbers are not arbitrary precision.  What is 1 / 3 ???
 })
 
-// Fourth requirement: does not throw an exception
-// Always returns a result
+// Requirement 4: does not throw an exception
 
+// Lie: throws an exception
+describe("throws in certain cases", function() {
+
+    function div(x: RealNumber, y: NonZeroNumber): Number {
+        if (x === null || y === null) throw "must pass non-null arguments"
+        if (x.num > 200) throw "x is too big";
+
+        return x.num / y.num;
+    }
+
+    it('throws if x or y is null', function () {
+        expect(function () {
+            div(null, null)
+        }).toThrow()
+    })
+})
+
+// Solution 1: (Elm): return value is object with success/failure
 describe("Don't throw; return an object with success/failure indication", function() {
 
     class DivResult {
@@ -250,9 +366,9 @@ describe("Don't throw; return an object with success/failure indication", functi
     function div(x: RealNumber, y: NonZeroNumber): DivResult {
         let result = new DivResult();
         try {
-            if (x.num > 200) {
-                throw "x is too big";
-            }
+            if (x === null || y === null) throw "must pass non-null arguments"
+            if (x.num > 200) throw "x is too big";
+
             result.Ok = x.num / y.num;
         }
         catch (e) {
@@ -263,6 +379,9 @@ describe("Don't throw; return an object with success/failure indication", functi
         }
     }
 
+    it('returns an error state for a null argument', function() {
+        expect(div(null,new NonZeroNumber(0.1)).Error).toBe('must pass non-null arguments');
+    })
     it('returns an error state for a number larger than can be represented by "number"', function() {
         expect(div(new RealNumber(Number.MAX_VALUE),new NonZeroNumber(0.1)).Error).toBe('x is too big');
     })
@@ -272,15 +391,15 @@ describe("Don't throw; return an object with success/failure indication", functi
 })
 // Hint: function returns a Result object.  User can choose to not check for Error, but that's a user issue.
 
+// Solution 2: Promises (success/failure callbacks)
 
-// Javascript has a built-in mechanism -- Promises
 describe("Return a promise", function() {
-    function div(x: RealNumber, y: NonZeroNumber): DivResult {
+    function div(x: RealNumber, y: NonZeroNumber): Promise {
         var p = new Promise(function(resolve,reject) {
             try {
-                if (x.num > 200) {
-                    throw "x is too big";
-                }
+                if (x === null || y === null) throw "must pass non-null arguments"
+                if (x.num > 200) throw "x is too big";
+
                 resolve(x.num / y.num);
             }
             catch (e) {
@@ -290,28 +409,16 @@ describe("Return a promise", function() {
         return p;
     }
 
-    it('rejects the promise when producing a number larger than can be represented by "number"', function(done) {
+    it('rejects the promise when producing a number larger than can be represented by "number"', function() {
         var p = div(new RealNumber(Number.MAX_VALUE),new NonZeroNumber(0.1));
-        p.then(function() { fail('should fail, but didnt'); done(); });
-        p.catch(function() { console.log('passed'); done()})
+        p.then(function() { fail('should fail, but didnt'); });
+        p.catch(function(msg) { expect(msg).toBe('x is too big');})
     })
-    it('resolves the promise for normal calculations', function(done) {
+    it('resolves the promise for normal calculations', function() {
         var p = div(new RealNumber(10),new NonZeroNumber(2));
-        p.then(function(n) { expect(n).toBe(5); console.log('passed'); done(); });
-        p.catch(function() { fail('should not have failed, but did'); done()})
+        p.then(function(n) { expect(n).toBe(5); });
+        p.catch(function() { fail('should not have failed, but did'); })
     })
 })
 
 
-// Other things that are notoriously lying
-// Dates
-// -- When will a future event take place
-// -- How long until a future event?
-// -- Person who is born on Feb 29th -- how old is he?
-// -- use a library like moment.js
-
-// Async
-// -- assume async calls will finish synchronously
-// -- assume remote calls will succeed
-// -- assume order of completion of remote calls
-// -- mixing sync and async
