@@ -33,6 +33,7 @@ describe('sample unit tests', function () {
         expect(x + y).toBe('[object Object]4');
     });
 });
+// QUESTION: How many are writing unit tests?
 // Requirement 1: returns the same value when called with identical arguments.
 //
 // Lie 1: has different return values, depending on values of x and y.
@@ -105,7 +106,7 @@ describe("div as a pure function", function () {
         expect(div(3, 4)).toBe(0.75);
     });
 });
-// Question: Is your function pure?
+// QUESTION: Are you writing pure functions?
 // Requirement 2: Enforces arguments to meet type requirements.
 // Lie 2a: div can take any arguments, of any type, you pass it.
 describe("div does not restrict parameters based on type", function () {
@@ -255,6 +256,8 @@ describe("requires a first argument that is a real number", function () {
         expect(div(new RealNumber(3), new NonZeroNumber(4))).toBe(0.75);
     });
 });
+// QUESTION: Are you doing parameter testing? Can you move that to a separate object?
+// QUESTION: Does your method have a domain?
 // Requirement 3: Always returns a useful value.
 // Lie 3: all combinations of input parameters produce a useful output
 // What about your code?
@@ -276,10 +279,10 @@ describe("div range examples", function () {
     it('Can produce a number larger than can be represented by "number"', function () {
         expect(div(new RealNumber(Number.MAX_VALUE), new NonZeroNumber(0.1))).toBe(Number.POSITIVE_INFINITY);
     });
-    // (x/a)/a =
     it('Numbers smaller than minimum are set to 0', function () {
-        expect(0.0000000000000001).not.toBe(0);
-        expect(div(new RealNumber(0.0000000000000001), new NonZeroNumber(Number.MAX_VALUE))).toBe(0);
+        var num = 0.0000000000000001;
+        expect(num).not.toBe(0);
+        expect(div(new RealNumber(num), new NonZeroNumber(Number.MAX_VALUE))).toBe(0);
     });
 });
 // Requirement 4: does not throw an exception
@@ -331,7 +334,7 @@ describe("Don't throw; return an object with success/failure indication", functi
         expect(div(new RealNumber(10), new NonZeroNumber(2)).Ok).toBe(5);
     });
 });
-// Hint: function returns a Result object.  User can choose to not check for Error, but that's a user issue.
+// Hint: function returns a Result object.  User can choose to not check for Error, but that's a user issue.  Good for sync code
 // Solution 2: Promises (success/failure callbacks)
 describe("Return a promise", function () {
     function div(x, y) {
@@ -360,4 +363,5 @@ describe("Return a promise", function () {
         p.catch(function () { fail('should not have failed, but did'); });
     });
 });
+// Hint: good for async code
 //# sourceMappingURL=test.js.map
