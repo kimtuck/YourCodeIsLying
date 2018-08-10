@@ -1,10 +1,5 @@
 "use strict";
 
-// Preliminaries
-
-// * Unit tests
-// * All tests in this file pass.
-
 describe('sample unit tests', function() {
     var x;
     var y;
@@ -41,17 +36,22 @@ describe('sample unit tests', function() {
         expect(x + y).toBe('[object Object]4');
     })
 })
-// QUESTION: How many are writing unit tests?
+
+
+
+
+
 
 // Requirement 1: returns the same value when called with identical arguments.
-//
-// Lie 1: has different return values, depending on values of x and y.
+// Lie 1: div has different return values, depending on values of x and y.
+
+
 describe("div with global variables.", function() {
-    var x;
-    var y;
     var div = function() {
         return x / y;
     };
+    var x;
+    var y;
 
     beforeEach (function() {
         x=3;
@@ -70,7 +70,6 @@ describe("div with global variables.", function() {
         y=10;
         expect(div()).toBe(0.3);    // not the same anymore
     })
-
 });
 // Hint: uses global variables
 // Hint: tests; beforeEach
@@ -140,8 +139,7 @@ describe("div as a pure function", function() {
 
 
 // Requirement 2: Enforces arguments to meet type requirements.
-
-// Lie 2a: div can take any arguments, of any type, you pass it.
+// Lie #2: Javascript functions can take any arguments, of any type, you pass it.
 describe("div does not restrict parameters based on type", function() {
     function div(x, y) {
         return x / y;
@@ -164,27 +162,14 @@ describe("div with parameter type checking", function() {
 
         return x / y;
     }
-    it('divides x by y',function() {
-        expect(div(3,4)).toBe(0.75);
-    })
-    it('throws on incorrect number of arguments', function() {
-        expect(function() { div(2)}).toThrow();
-    })
-    it('throws on null', function() {
-        expect(function() { div(null, null)}).toThrow();
-    })
-    it('throws on bad arguments', function() {
-        expect(function() { div('a','b')} ).toThrow();
-    })
 })
 // Hint: separation of concerns.  How much code is concerned with type checks and how much is business logic?
 
 
 
-// Requirement 2: Enforces arguments to meet type requirements.
 
-// Solution:
-// -- Use typescript to do type checking.
+// Requirement 2: Enforces arguments to meet type requirements.
+// Solution: Use typescript to do type checking.
 
 describe("div as a pure function", function() {
     function div(x: number, y: number): number {
@@ -197,29 +182,23 @@ describe("div as a pure function", function() {
 // Done!!!  -- well, maybe not.
 
 
-// Requirement 2: Enforces arguments to meet problem domain requirements.
-// Lie 2b -- div allows you to pass any number.  But lots of things are not really allowed.  Div by zero.
-// Solution:
+// Requirement 3: Arguments must meet domain requirements.
+// Lie 3 -- Not all values for a specified type are valid.
+// div requires you to pass "numbers".
+// But lots of "numbers" do not meet the domain requirements.
+// -- denominator is 0
+// -- numerator or denominator is NaN
 
+// Solution:
+// Allowing any "number" is called "primitive obsession"
 // Avoid "primitive obsession"
 // Ensure that parameters meet problem domain requirements
 
 // Domain:
 // -- numerator and denominator are actual numbers
 // -- denominator is not zero
-// -- result can be represented as a javascript number
-
-describe("div when y is zero (primitive obsession)", function() {
-    function div(x: number, y: number): number {
-        return x / y;
-    }
-    it('divides x by y',function() {
-        expect(div(3,0)).toBe( Number.POSITIVE_INFINITY);
-    })
-})
-// Here I was surprised.  In C# you get an exception;
-// in javascript you get Number.POSTIVE_INFINITY
-// But same as NaN poisoning
+// -- numerator and denominator values are such that the
+//    result can be represented as a javascript number
 
 
 class NonZeroNumber {
@@ -303,23 +282,25 @@ describe("requires a first argument that is a real number", function() {
         expect(div(new RealNumber(3),new NonZeroNumber(4))).toBe(0.75);
     })
 })
-// QUESTION: Are you doing parameter testing? Can you move that to a separate object?
-// QUESTION: Does your method have a domain?
 
 
 
 
 
-// Requirement 3: Always returns a useful value.
 
-// Lie 3: all combinations of input parameters produce a useful output
-// What about your code?
+// Requirement 4: Always returns a useful value.
+// Lie 4: div always returns a correctly computed, numeric value
 
 // div's lies:
 // -- div returns the EXACT result of dividing x by y
 // -- finite representation of mantissa
 // -- range of numeric representation
-// These are hard to fix.
+// These are harder to fix
+// These are "domain" issues.
+
+
+
+
 
 describe("div range examples", function() {
     function div(x: RealNumber, y: NonZeroNumber): number {
@@ -343,9 +324,11 @@ describe("div range examples", function() {
     })
 })
 
-// Requirement 4: does not throw an exception
+// Requirement 5: does not throw an exception
+// div needs to check for null parameters (parameters are objects now)
+// How does div handle null parameters?
+// This is not really a "domain" problem.
 
-// Lie: throws an exception
 describe("throws in certain cases", function() {
 
     function div(x: RealNumber, y: NonZeroNumber): Number {
@@ -362,9 +345,8 @@ describe("throws in certain cases", function() {
     })
 })
 
-// Solution 1: (Elm): return value is object with success/failure
+// Solution: return value is object with success/failure
 describe("Don't throw; return an object with success/failure indication", function() {
-
     class DivResult {
         public Ok: number;
         public Error: string;
@@ -395,9 +377,8 @@ describe("Don't throw; return an object with success/failure indication", functi
         expect(div(new RealNumber(10), new NonZeroNumber(2)).Ok).toBe(5);
     })
 })
-// Hint: function returns a Result object.  User can choose to not check for Error, but that's a user issue.  Good for sync code
 
-// Solution 2: Promises (success/failure callbacks)
+// Solution: Promises (success/failure callbacks)
 
 describe("Return a promise", function() {
     function div(x: RealNumber, y: NonZeroNumber): Promise {
